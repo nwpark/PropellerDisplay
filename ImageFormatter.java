@@ -29,7 +29,7 @@ public class ImageFormatter
     formattedArray = new Color[14][];
   } // ImageFormatter
 
-  public void formatImage() throws IOException
+  public void formatImage() //throws IOException
   {
     //averageSectionColor(300, Math.PI*3/2, Math.PI*2);
 
@@ -42,18 +42,23 @@ public class ImageFormatter
       {
         double endAngle = initAngle + 2*Math.PI / noOfSections;
         formattedArray[radius][i]
-          = averageSectionColor(radius*pixelHeight,
-                                initAngle, endAngle);
+          = averageSectionColor(radius*pixelHeight, initAngle, endAngle);
+        setSectionColor(radius*pixelHeight, initAngle, endAngle,
+                        formattedArray[radius][i]);
         initAngle = endAngle;
       } // for
     } // for
 
-    File output = new File("test.jpg");
-    ImageIO.write(outputImage, "jpg", output);
+    try
+    {
+      File output = new File("test.jpg");
+      ImageIO.write(outputImage, "jpg", output);
+    } // try
+    catch(IOException e) { System.out.println(e); }
   } // formatImage
 
   private Color averageSectionColor(int radius, double initAngle,
-                                    double endAngle) throws IOException
+                                    double endAngle) //throws IOException
   {
     int redAverage, greenAverage, blueAverage, pixelCount;
     redAverage = greenAverage = blueAverage = pixelCount = 0;
@@ -80,7 +85,7 @@ public class ImageFormatter
                 && currentAngle > initAngle
                 && currentAngle < endAngle)
         {
-          outputImage.setRGB(x, y, new Color(0, 255, 0).getRGB());
+          //outputImage.setRGB(x, y, new Color(0, 255, 0).getRGB());
 
           Color pixelColor = new Color(image.getRGB(x, y));
           redAverage += pixelColor.getRed();
@@ -96,9 +101,40 @@ public class ImageFormatter
     return new Color(redAverage, greenAverage, blueAverage);
   } // averageSectionColor
 
-  public void createOutput()
+  private void setSectionColor(int radius, double initAngle,
+                               double endAngle, Color color) //throws IOException
   {
+    int outerRad = radius + pixelHeight / 2;
+    int innerRad = radius - pixelHeight / 2;
 
-  } // createOutput
+    for(int x=0; x < image.getWidth(); x++)
+      for(int y=0; y < image.getHeight(); y++)
+      {
+        double dx = x - imageCenterX;
+        double dy = y - imageCenterY;
+        double distanceSquared = dx*dx + dy*dy;
+
+        //double currentAngle = Math.atan2(dx, dy);
+        double currentAngle = Math.atan(dx / dy);
+        // 1st and 4th quadrants
+        if(dy < 0) currentAngle += Math.PI;
+        // 3rd quadrant
+        else if(dy > 0 && dx < 0) currentAngle += 2*Math.PI;
+
+        if(distanceSquared < outerRad*outerRad
+                && distanceSquared > innerRad*innerRad
+                && currentAngle > initAngle
+                && currentAngle < endAngle)
+        {
+          outputImage.setRGB(x, y, color.getRGB());
+          // try
+          // {
+          //   File output = new File("test.jpg");
+          //   ImageIO.write(outputImage, "jpg", output);
+          // }
+          // catch(Exception e){}
+        } // if
+      } // for
+  } // setSectionColor
 
 } // class ImageFormatter
