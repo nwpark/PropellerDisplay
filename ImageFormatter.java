@@ -31,23 +31,7 @@ public class ImageFormatter
 
   public void formatImage() throws IOException
   {
-    // for (int x = 0; x < pixelHeight; x++)
-    //     for (int y = 0; y < pixelHeight; y++)
-    //     {
-    //         double dx = x - imageCenterX;
-    //         double dy = y - imageCenterY;
-    //         double distanceSquared = dx * dx + dy * dy;
-    //
-    //         if (distanceSquared <= (pixelWidth * pixelWidth))
-    //         {
-    //           outputImage.setRGB(imageCenterX + x, imageCenterY + y,
-    //                              new Color(0, 0, 0).getRGB());
-    //           System.out.println("yay");
-    //         }
-    //         System.out.println("yay2");
-    //     }
-    // File output = new File("test.jpg");
-    // ImageIO.write(outputImage, "jpg", output);
+    //averageSectionColor(300, Math.PI*3/2, Math.PI*2);
 
     for(int radius = 1; radius < 14; radius++)
     {
@@ -63,6 +47,9 @@ public class ImageFormatter
         initAngle = endAngle;
       } // for
     } // for
+
+    File output = new File("test.jpg");
+    ImageIO.write(outputImage, "jpg", output);
   } // formatImage
 
   private Color averageSectionColor(int radius, double initAngle,
@@ -71,34 +58,37 @@ public class ImageFormatter
     int redAverage, greenAverage, blueAverage, pixelCount;
     redAverage = greenAverage = blueAverage = pixelCount = 0;
 
-    for(int currentRadius = radius - pixelHeight / 2;
-        currentRadius <= radius + pixelHeight / 2; currentRadius++)
-    {
-      // arc length formula s = r*theta
-      double angleIncrement = 1 / (double)currentRadius;
-      double currentAngle = initAngle;
+    int outerRad = radius + pixelHeight / 2;
+    int innerRad = radius - pixelHeight / 2;
 
-      while(currentAngle <= endAngle)
+    for(int x=0; x < image.getWidth(); x++)
+      for(int y=0; y < image.getHeight(); y++)
       {
-        Color pixelColor
-          = new Color(image.getRGB(imageCenterX + (int)(currentRadius * Math.sin(currentAngle)),
-                                   imageCenterY + (int)(currentRadius * Math.cos(currentAngle))));
+        double dx = x - imageCenterX;
+        double dy = y - imageCenterY;
+        double distanceSquared = dx*dx + dy*dy;
 
-        // outputImage.setRGB(imageCenterX + (int)(currentRadius * Math.sin(currentAngle)),
-        //                    imageCenterY + (int)(currentRadius * Math.cos(currentAngle)),
-        //                    new Color(0, 0, 0).getRGB());
+        //double currentAngle = Math.atan2(dx, dy);
+        double currentAngle = Math.atan(dx / dy);
+        // 1st and 4th quadrants
+        if(dy < 0) currentAngle += Math.PI;
+        // 3rd quadrant
+        else if(dy > 0 && dx < 0) currentAngle += 2*Math.PI;
 
-        redAverage += pixelColor.getRed();
-        greenAverage += pixelColor.getGreen();
-        blueAverage += pixelColor.getBlue();
-        pixelCount++;
+        if(distanceSquared < outerRad*outerRad
+                && distanceSquared > innerRad*innerRad
+                && currentAngle > initAngle
+                && currentAngle < endAngle)
+        {
+          outputImage.setRGB(x, y, new Color(0, 255, 0).getRGB());
 
-        currentAngle += angleIncrement;
-      } // while
-    } // for
-
-    // File output = new File("test.jpg");
-    // ImageIO.write(image, "jpg", output);
+          Color pixelColor = new Color(image.getRGB(x, y));
+          redAverage += pixelColor.getRed();
+          greenAverage += pixelColor.getGreen();
+          blueAverage += pixelColor.getBlue();
+          pixelCount++;
+        } // if
+      } // for
 
     redAverage /= pixelCount;
     greenAverage /= pixelCount;
