@@ -36,7 +36,7 @@ public class ImageUploader extends JFrame implements ActionListener
   {
     setTitle("Image Uploader");
     imageJPanel = new ImageJPanel();
-    imageJPanel.setImage("8bit_mushroom_intro.jpg");
+    //imageJPanel.setImage("8bit_mushroom_intro.jpg");
 
     Container contents = getContentPane();
     contents.setLayout(new GridLayout(0, 2));
@@ -117,6 +117,7 @@ public class ImageUploader extends JFrame implements ActionListener
         File selectedFile = fileChooser.getSelectedFile();
         fileJTextField.setText(selectedFile.getPath());
 
+        imageJPanel.setImage(selectedFile.getName());
         // File input = new File(selectedFile.getName());
         // image = ImageIO.read(input);
       } // if
@@ -127,7 +128,7 @@ public class ImageUploader extends JFrame implements ActionListener
   {
     try
     {
-      ImageFormatter imageFormatter = new ImageFormatter(image, imageJPanel);
+      ImageFormatter imageFormatter = new ImageFormatter(imageJPanel);
       imageFormatter.formatImage();
     } // try
     catch(IOException e) {}

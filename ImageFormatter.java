@@ -18,9 +18,9 @@ public class ImageFormatter
   private Color[][] formattedArray;
   private JPanel panel;
 
-  public ImageFormatter(BufferedImage givenImage, JPanel givenPanel) throws IOException
+  public ImageFormatter(ImageJPanel givenPanel) throws IOException
   {
-    image = outputImage = givenImage;
+    image = outputImage = givenPanel.getImage();
     panel = givenPanel;
 
     imageRadius = Math.min(image.getWidth(), image.getHeight()) / 2;
@@ -61,7 +61,7 @@ public class ImageFormatter
   } // formatImage
 
   private Color averageSectionColor(int radius, double initAngle,
-                                    double endAngle) //throws IOException
+                                    double endAngle)
   {
     int redAverage, greenAverage, blueAverage, pixelCount;
     redAverage = greenAverage = blueAverage = pixelCount = 0;
@@ -88,8 +88,6 @@ public class ImageFormatter
                 && currentAngle > initAngle
                 && currentAngle < endAngle)
         {
-          //outputImage.setRGB(x, y, new Color(0, 255, 0).getRGB());
-
           Color pixelColor = new Color(image.getRGB(x, y));
           redAverage += pixelColor.getRed();
           greenAverage += pixelColor.getGreen();
@@ -105,7 +103,7 @@ public class ImageFormatter
   } // averageSectionColor
 
   private void setSectionColor(int radius, double initAngle,
-                               double endAngle, Color color) //throws IOException
+                               double endAngle, Color color)
   {
     int outerRad = radius + pixelHeight / 2;
     int innerRad = radius - pixelHeight / 2;
@@ -131,12 +129,6 @@ public class ImageFormatter
         {
           outputImage.setRGB(x, y, color.getRGB());
           panel.repaint();
-          // try
-          // {
-          //   File output = new File("test.jpg");
-          //   ImageIO.write(outputImage, "jpg", output);
-          // }
-          // catch(Exception e){}
         } // if
       } // for
   } // setSectionColor

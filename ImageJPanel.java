@@ -14,9 +14,13 @@ public class ImageJPanel extends JPanel
 
   public ImageJPanel()
   {
-    //image = givenImage;
     setBorder(BorderFactory.createTitledBorder("Output"));
   } // ImageJPanel
+
+  public BufferedImage getImage()
+  {
+    return image;
+  } // getImage
 
   public void setImage(String fileName)
   {
