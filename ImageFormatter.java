@@ -4,6 +4,7 @@ import java.awt.Color;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import javax.swing.JPanel;
 
 public class ImageFormatter
 {
@@ -15,10 +16,12 @@ public class ImageFormatter
   private int pixelHeight;
   private int pixelWidth;
   private Color[][] formattedArray;
+  private JPanel panel;
 
-  public ImageFormatter(BufferedImage givenImage) throws IOException
+  public ImageFormatter(BufferedImage givenImage, JPanel givenPanel) throws IOException
   {
     image = outputImage = givenImage;
+    panel = givenPanel;
 
     imageRadius = Math.min(image.getWidth(), image.getHeight()) / 2;
     imageCenterX = image.getWidth() / 2;
@@ -127,6 +130,7 @@ public class ImageFormatter
                 && currentAngle < endAngle)
         {
           outputImage.setRGB(x, y, color.getRGB());
+          panel.repaint();
           // try
           // {
           //   File output = new File("test.jpg");
