@@ -1,40 +1,144 @@
 import javax.swing.JFrame;
+import javax.swing.JPanel;
+import javax.swing.JButton;
+import javax.swing.JLabel;
+import javax.swing.JTextField;
+import javax.swing.BorderFactory;
+import javax.swing.JSeparator;
+import javax.swing.JFileChooser;
 import javax.imageio.ImageIO;
+
+import java.awt.Container;
+import java.awt.BorderLayout;
+import java.awt.GridLayout;
+import java.awt.FlowLayout;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.awt.image.BufferedImage;
 import java.awt.Color;
+import java.awt.Graphics;
+import java.awt.Dimension;
 import java.io.File;
 import java.io.IOException;
 
-import java.awt.Graphics;
-import javax.swing.JPanel;
-
-public class ImageUploader extends JPanel
+public class ImageUploader extends JFrame implements ActionListener
 {
-  private static BufferedImage image;
+  private BufferedImage image;
+  private ImageJPanel imageJPanel;
+
+  private final JButton formatJButton = new JButton("Format");
+  private final JButton uploadJButton = new JButton("Upload");
+  private final JButton browseJButton = new JButton("Browse");
+  private final JTextField fileJTextField = new JTextField();
+
+  public ImageUploader(BufferedImage givenImage)
+  {
+    setTitle("Image Uploader");
+    image = givenImage;
+
+    Container contents = getContentPane();
+    contents.setLayout(new GridLayout(0, 2));
+
+    // Left side of GUI
+    JPanel uiJPanel = new JPanel();
+    uiJPanel.setBorder(BorderFactory.createTitledBorder("Settings"));
+    uiJPanel.setLayout(new BorderLayout());
+    contents.add(uiJPanel);
+    // Right side of GUI
+    imageJPanel = new ImageJPanel(image);
+    contents.add(imageJPanel);
+
+    // North side of UI area
+    JPanel settingsJPanel = new JPanel();
+    settingsJPanel.setLayout(new GridLayout(0, 1));
+    uiJPanel.add(settingsJPanel, BorderLayout.NORTH);
+
+    // File location selector
+    JPanel fileJPanel = new JPanel();
+    fileJPanel.setLayout(new GridLayout(0, 2));
+    fileJPanel.add(new JLabel("File Location:"));
+    fileJPanel.add(browseJButton);
+    browseJButton.addActionListener(this);
+    settingsJPanel.add(fileJPanel);
+    //fileJTextField.setEnabled(false);
+    settingsJPanel.add(fileJTextField);
+
+    // COM Port selector
+    settingsJPanel.add(new JLabel("COM Port:"));
+    JTextField comPortJTextField = new JTextField();
+    settingsJPanel.add(comPortJTextField);
+
+    // Pixel settings
+    JPanel optionsJPanel = new JPanel();
+    optionsJPanel.setLayout(new GridLayout(0, 2));
+    JPanel pixelNoJPanel = new JPanel();
+    pixelNoJPanel.setLayout(new FlowLayout(FlowLayout.LEFT));
+    pixelNoJPanel.add(new JLabel("Pixels:"));
+    pixelNoJPanel.add(new JTextField("14", 3));
+    optionsJPanel.add(pixelNoJPanel);
+    JPanel pixelWidthJPanel = new JPanel();
+    pixelWidthJPanel.setLayout(new FlowLayout(FlowLayout.LEFT));
+    pixelWidthJPanel.add(new JLabel("Pixel width:"));
+    pixelWidthJPanel.add(new JTextField("1", 3));
+    optionsJPanel.add(pixelWidthJPanel);
+    settingsJPanel.add(optionsJPanel);
+
+    // Buttons at botton of UI
+    JPanel buttonsJPanel = new JPanel();
+    buttonsJPanel.setLayout(new GridLayout(0, 2));
+    buttonsJPanel.add(formatJButton);
+    formatJButton.addActionListener(this);
+    buttonsJPanel.add(uploadJButton);
+    uiJPanel.add(buttonsJPanel, BorderLayout.SOUTH);
+
+    setDefaultLookAndFeelDecorated(true);
+    setDefaultCloseOperation(EXIT_ON_CLOSE);
+    pack();
+  } // ImageUploader
 
   @Override
-  public void paintComponent(Graphics g)
+  public void actionPerformed(ActionEvent event)
   {
-    super.paintComponent(g);
-    g.drawImage(image, 0, 0, this);
-  } // paintComponent
+    if(event.getSource() == formatJButton)
+    {
+      Thread formatImageThread = new Thread(new Runnable(){
+        public void run(){ formatImage(); } });
+
+      formatImageThread.start();
+      //formatImage();
+    } // if
+    else if(event.getSource() == browseJButton)
+    {
+      JFileChooser fileChooser = new JFileChooser();
+      int returnValue = fileChooser.showOpenDialog(null);
+      if(returnValue == JFileChooser.APPROVE_OPTION)
+      {
+        File selectedFile = fileChooser.getSelectedFile();
+        fileJTextField.setText(selectedFile.getPath());
+      } // if
+    } // else if
+  } // actionPerformed
+
+  public void formatImage()
+  {
+    try
+    {
+      ImageFormatter imageFormatter = new ImageFormatter(image, imageJPanel);
+      imageFormatter.formatImage();
+    } // try
+    catch(IOException e) {}
+  } // formatImage
 
   public static void main(String[] args) throws IOException
   {
-    JFrame frame = new JFrame();
-    JPanel panel = new ImageUploader();
-    frame.getContentPane().add(panel);
-    frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-    frame.setSize(350, 350);
-    frame.setVisible(true);
-
     File input = new File("8bit_mushroom_intro.jpg");
-    image = ImageIO.read(input);
-    ImageFormatter imageFormatter = new ImageFormatter(image, panel);
+    BufferedImage image = ImageIO.read(input);
 
-    panel.repaint();
+    ImageUploader imageUploader = new ImageUploader(image);
+    imageUploader.setSize(650, 350);
+    imageUploader.setVisible(true);
 
-    imageFormatter.formatImage();
+    //imageUploader.formatImage();
   } // main
 
 } // class ImageUploader
