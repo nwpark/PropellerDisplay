@@ -18,6 +18,7 @@ import java.awt.image.BufferedImage;
 import java.awt.Color;
 import java.awt.Graphics;
 import java.awt.Dimension;
+
 import java.io.File;
 import java.io.IOException;
 
@@ -31,10 +32,11 @@ public class ImageUploader extends JFrame implements ActionListener
   private final JButton browseJButton = new JButton("Browse");
   private final JTextField fileJTextField = new JTextField();
 
-  public ImageUploader(BufferedImage givenImage)
+  public ImageUploader() throws IOException
   {
     setTitle("Image Uploader");
-    image = givenImage;
+    imageJPanel = new ImageJPanel();
+    imageJPanel.setImage("8bit_mushroom_intro.jpg");
 
     Container contents = getContentPane();
     contents.setLayout(new GridLayout(0, 2));
@@ -45,7 +47,7 @@ public class ImageUploader extends JFrame implements ActionListener
     uiJPanel.setLayout(new BorderLayout());
     contents.add(uiJPanel);
     // Right side of GUI
-    imageJPanel = new ImageJPanel(image);
+    //imageJPanel = new ImageJPanel(image);
     contents.add(imageJPanel);
 
     // North side of UI area
@@ -105,7 +107,6 @@ public class ImageUploader extends JFrame implements ActionListener
         public void run(){ formatImage(); } });
 
       formatImageThread.start();
-      //formatImage();
     } // if
     else if(event.getSource() == browseJButton)
     {
@@ -115,6 +116,9 @@ public class ImageUploader extends JFrame implements ActionListener
       {
         File selectedFile = fileChooser.getSelectedFile();
         fileJTextField.setText(selectedFile.getPath());
+
+        // File input = new File(selectedFile.getName());
+        // image = ImageIO.read(input);
       } // if
     } // else if
   } // actionPerformed
@@ -131,14 +135,9 @@ public class ImageUploader extends JFrame implements ActionListener
 
   public static void main(String[] args) throws IOException
   {
-    File input = new File("8bit_mushroom_intro.jpg");
-    BufferedImage image = ImageIO.read(input);
-
-    ImageUploader imageUploader = new ImageUploader(image);
+    ImageUploader imageUploader = new ImageUploader();
     imageUploader.setSize(650, 350);
     imageUploader.setVisible(true);
-
-    //imageUploader.formatImage();
   } // main
 
 } // class ImageUploader
