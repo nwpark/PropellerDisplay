@@ -7,8 +7,10 @@ import javax.swing.JFrame;
 import javax.swing.JPanel;
 import java.io.IOException;
 
-public class Test extends JPanel {
+public class Test extends JPanel
+{
 
+   @Override
    public void paint(Graphics g)
    {
       try
@@ -19,12 +21,26 @@ public class Test extends JPanel {
       catch (IOException e){}
    }
 
-   public static void main(String[] args) {
+   @Override
+   public void paintComponent(Graphics g)
+   {
+     super.paintComponent(g);
+     g.fillRect(0, 0, 100, 100);
+   }
+
+   public static void main(String[] args)
+   {
       JFrame frame = new JFrame();
-      frame.getContentPane().add(new Test());
+      JPanel panel = new Test();
+      frame.getContentPane().add(panel);
 
       frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
       frame.setSize(350, 350);
       frame.setVisible(true);
+
+      // Graphics g = panel.getGraphics();
+      // g.fillRect(0, 0, 100, 100);
+      // panel.paintComponent(g);
+      frame.repaint();
    }
 }
