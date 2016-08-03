@@ -15,13 +15,14 @@ public class ImageFormatter
   private int imageCenterY;
   private int pixelHeight;
   private int pixelWidth;
+  private int noOfPixels;
   private Color[][] formattedArray;
   private JPanel panel;
 
   public ImageFormatter(ImageJPanel givenPanel) throws IOException
   {
-    image = outputImage = givenPanel.getImage();
     panel = givenPanel;
+    image = outputImage = givenPanel.getImage();
 
     imageRadius = Math.min(image.getWidth(), image.getHeight()) / 2;
     imageCenterX = image.getWidth() / 2;

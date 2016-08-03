@@ -6,6 +6,8 @@ import javax.swing.JTextField;
 import javax.swing.BorderFactory;
 import javax.swing.JSeparator;
 import javax.swing.JFileChooser;
+import javax.swing.UIManager;
+import javax.swing.border.EmptyBorder;
 import javax.imageio.ImageIO;
 
 import java.awt.Container;
@@ -34,6 +36,11 @@ public class ImageUploader extends JFrame implements ActionListener
 
   public ImageUploader() throws IOException
   {
+    try{
+      //UIManager.setLookAndFeel("com.sun.java.swing.plaf.windows.WindowsLookAndFeel");
+      UIManager.setLookAndFeel("com.sun.java.swing.plaf.nimbus.NimbusLookAndFeel");
+    } catch(Exception e) { System.out.println(e); }
+
     setTitle("Image Uploader");
     imageJPanel = new ImageJPanel();
     //imageJPanel.setImage("8bit_mushroom_intro.jpg");
@@ -58,12 +65,15 @@ public class ImageUploader extends JFrame implements ActionListener
     // File location selector
     JPanel fileJPanel = new JPanel();
     fileJPanel.setLayout(new GridLayout(0, 2));
+    fileJPanel.setBorder(new EmptyBorder(5, 0, 5, 0));
     fileJPanel.add(new JLabel("File Location:"));
     fileJPanel.add(browseJButton);
     browseJButton.addActionListener(this);
     settingsJPanel.add(fileJPanel);
     //fileJTextField.setEnabled(false);
     settingsJPanel.add(fileJTextField);
+
+    settingsJPanel.add(new JSeparator());
 
     // COM Port selector
     settingsJPanel.add(new JLabel("COM Port:"));
@@ -74,12 +84,12 @@ public class ImageUploader extends JFrame implements ActionListener
     JPanel optionsJPanel = new JPanel();
     optionsJPanel.setLayout(new GridLayout(0, 2));
     JPanel pixelNoJPanel = new JPanel();
-    pixelNoJPanel.setLayout(new FlowLayout(FlowLayout.LEFT));
+    pixelNoJPanel.setLayout(new FlowLayout(FlowLayout.RIGHT));
     pixelNoJPanel.add(new JLabel("Pixels:"));
     pixelNoJPanel.add(new JTextField("14", 3));
     optionsJPanel.add(pixelNoJPanel);
     JPanel pixelWidthJPanel = new JPanel();
-    pixelWidthJPanel.setLayout(new FlowLayout(FlowLayout.LEFT));
+    pixelWidthJPanel.setLayout(new FlowLayout(FlowLayout.RIGHT));
     pixelWidthJPanel.add(new JLabel("Pixel width:"));
     pixelWidthJPanel.add(new JTextField("1", 3));
     optionsJPanel.add(pixelWidthJPanel);
@@ -110,7 +120,7 @@ public class ImageUploader extends JFrame implements ActionListener
     } // if
     else if(event.getSource() == browseJButton)
     {
-      JFileChooser fileChooser = new JFileChooser();
+      JFileChooser fileChooser = new JFileChooser(".");
       int returnValue = fileChooser.showOpenDialog(null);
       if(returnValue == JFileChooser.APPROVE_OPTION)
       {
