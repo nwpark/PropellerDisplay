@@ -37,6 +37,6 @@ public class ImageJPanel extends JPanel
   public void paintComponent(Graphics g)
   {
     super.paintComponent(g);
-    g.drawImage(image, 10, 10, this);
+    g.drawImage(image, 10, 15, this);
   } // paintComponent
 } // class ImageJPanel

@@ -6,6 +6,7 @@ import javax.swing.JTextField;
 import javax.swing.BorderFactory;
 import javax.swing.JSeparator;
 import javax.swing.JFileChooser;
+import javax.swing.JComboBox;
 import javax.swing.UIManager;
 import javax.swing.border.EmptyBorder;
 import javax.imageio.ImageIO;
@@ -29,21 +30,22 @@ public class PropellerDisplay extends JFrame implements ActionListener
   private BufferedImage image;
   private ImageJPanel imageJPanel;
 
-  private final JButton formatJButton = new JButton("Format");
-  private final JButton uploadJButton = new JButton("Upload");
-  private final JButton browseJButton = new JButton("Browse");
-  private final JTextField fileJTextField = new JTextField();
+  private final ImageUploader imageUploader = new ImageUploader();
+
+  private final JButton formatJButton;
+  private final JButton uploadJButton;
+  private final JButton browseJButton;
+  private final JTextField fileJTextField;
+  private final JComboBox comPortJComboBox;
 
   public PropellerDisplay() throws IOException
   {
     try{
-      //UIManager.setLookAndFeel("com.sun.java.swing.plaf.windows.WindowsLookAndFeel");
-      UIManager.setLookAndFeel("com.sun.java.swing.plaf.nimbus.NimbusLookAndFeel");
+      UIManager.setLookAndFeel("com.sun.java.swing.plaf.windows.WindowsLookAndFeel");
+      //UIManager.setLookAndFeel("com.sun.java.swing.plaf.nimbus.NimbusLookAndFeel");
     } catch(Exception e) { System.out.println(e); }
 
-    setTitle("Image Uploader");
-    imageJPanel = new ImageJPanel();
-    //imageJPanel.setImage("8bit_mushroom_intro.jpg");
+    setTitle("Propeller Display Uploader");
 
     Container contents = getContentPane();
     contents.setLayout(new GridLayout(0, 2));
@@ -54,7 +56,7 @@ public class PropellerDisplay extends JFrame implements ActionListener
     uiJPanel.setLayout(new BorderLayout());
     contents.add(uiJPanel);
     // Right side of GUI
-    //imageJPanel = new ImageJPanel(image);
+    imageJPanel = new ImageJPanel();
     contents.add(imageJPanel);
 
     // North side of UI area
@@ -65,20 +67,27 @@ public class PropellerDisplay extends JFrame implements ActionListener
     // File location selector
     JPanel fileJPanel = new JPanel();
     fileJPanel.setLayout(new GridLayout(0, 2));
-    fileJPanel.setBorder(new EmptyBorder(5, 0, 5, 0));
+    fileJPanel.setBorder(new EmptyBorder(3, 0, 3, 0));
     fileJPanel.add(new JLabel("File Location:"));
+    browseJButton = new JButton("Browse");
     fileJPanel.add(browseJButton);
     browseJButton.addActionListener(this);
     settingsJPanel.add(fileJPanel);
-    //fileJTextField.setEnabled(false);
+    fileJTextField = new JTextField();
+    fileJTextField.setEnabled(false);
     settingsJPanel.add(fileJTextField);
 
+    // Seperator between file and com port selection
     settingsJPanel.add(new JSeparator());
 
     // COM Port selector
     settingsJPanel.add(new JLabel("COM Port:"));
-    JTextField comPortJTextField = new JTextField();
-    settingsJPanel.add(comPortJTextField);
+    comPortJComboBox = new JComboBox(imageUploader.getPortNames());
+    settingsJPanel.add(comPortJComboBox);
+    comPortJComboBox.addActionListener(this);
+
+    // Seperator between com port selection and pixel settings
+    settingsJPanel.add(new JSeparator());
 
     // Pixel settings
     JPanel optionsJPanel = new JPanel();
@@ -98,12 +107,15 @@ public class PropellerDisplay extends JFrame implements ActionListener
     // Buttons at botton of UI
     JPanel buttonsJPanel = new JPanel();
     buttonsJPanel.setLayout(new GridLayout(0, 2));
+    formatJButton = new JButton("Format");          // format button
     buttonsJPanel.add(formatJButton);
     formatJButton.addActionListener(this);
+    uploadJButton = new JButton("Upload");          // upload button
     buttonsJPanel.add(uploadJButton);
+    uploadJButton.addActionListener(this);
     uiJPanel.add(buttonsJPanel, BorderLayout.SOUTH);
 
-    setDefaultLookAndFeelDecorated(true);
+    //setDefaultLookAndFeelDecorated(true);
     setDefaultCloseOperation(EXIT_ON_CLOSE);
     pack();
   } // PropellerDisplay

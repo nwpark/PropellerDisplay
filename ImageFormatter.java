@@ -35,8 +35,6 @@ public class ImageFormatter
 
   public void formatImage() //throws IOException
   {
-    //averageSectionColor(300, Math.PI*3/2, Math.PI*2);
-
     for(int radius = 1; radius < 14; radius++)
     {
       int noOfSections = (int)(2*Math.PI*radius*pixelHeight / (double)pixelWidth);
@@ -133,5 +131,35 @@ public class ImageFormatter
         } // if
       } // for
   } // setSectionColor
+
+  private int pixelsPerSegment()
+  {
+    int pixelCount = 0;
+
+    for(int x=0; x < image.getWidth(); x++)
+      for(int y=0; y < image.getHeight(); y++)
+      {
+        double dx = x - imageCenterX;
+        double dy = y - imageCenterY;
+        double distanceSquared = dx*dx + dy*dy;
+
+        //double currentAngle = Math.atan2(dx, dy);
+        double currentAngle = Math.atan(dx / dy);
+        // 1st and 4th quadrants
+        if(dy < 0) currentAngle += Math.PI;
+        // 3rd quadrant
+        else if(dy > 0 && dx < 0) currentAngle += 2*Math.PI;
+
+        if(distanceSquared < outerRad*outerRad
+                && distanceSquared > innerRad*innerRad
+                && currentAngle > initAngle
+                && currentAngle < endAngle)
+        {
+          pixelCount++;
+        } // if
+      } // for
+
+      return pixelCount;
+  } // pixelsPerSegment
 
 } // class ImageFormatter

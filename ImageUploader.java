@@ -1,23 +1,29 @@
-import gnu.io.*; // RXTX
 import java.util.Enumeration;
+import java.util.HashMap;
+import java.util.Set;
+
+import gnu.io.CommPortIdentifier;
 
 public class ImageUploader
 {
+  private final HashMap<String, CommPortIdentifier>
+    comPorts = new HashMap<String, CommPortIdentifier>();
 
-	public static void main(String[] args)
+  public ImageUploader()
   {
-		//System.out.println(java.library.path);
-	    CommPortIdentifier serialPortId;
-	    //static CommPortIdentifier sSerialPortId;
-	    Enumeration enumComm;
-	    //SerialPort serialPort;
+    Enumeration<CommPortIdentifier> comPortsEnum
+      = CommPortIdentifier.getPortIdentifiers();
+    while(comPortsEnum.hasMoreElements())
+    {
+      CommPortIdentifier serialPortId = comPortsEnum.nextElement();
+      comPorts.put(serialPortId.getName(), serialPortId);
+    } // while
+  } // ImageUploader
 
-	    enumComm = CommPortIdentifier.getPortIdentifiers();
-	    while (enumComm.hasMoreElements()) {
-	     	serialPortId = (CommPortIdentifier) enumComm.nextElement();
-	     	if(serialPortId.getPortType() == CommPortIdentifier.PORT_SERIAL)
-	    		System.out.println(serialPortId.getName());
-	    }
-	}
+  public String[] getPortNames()
+  {
+    Set<String> portNames = comPorts.keySet();
+    return portNames.toArray(new String[portNames.size()]);
+  } // getPortNames
 
-}
+} // class ImageUploader
