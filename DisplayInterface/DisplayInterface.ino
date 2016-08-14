@@ -14,32 +14,29 @@ void setup()
   pinMode(DATA_PIN, OUTPUT);
   pinMode(8, INPUT);
 
-  pinMode(9, OUTPUT);
-  analogWrite(9, 20);
-
-  pinMode(12, OUTPUT);
-  digitalWrite(12, HIGH);
+  pinMode(10, OUTPUT);
+  digitalWrite(10, HIGH);
 } // setup
 
 void loop()
 {
   clearAll();
 
-  if(!digitalRead(8))
-    light(13);
-  else
-    off(13);
+//  if(!digitalRead(8))
+//    light(13);
+//  else
+//    off(13);
+//
+//  writeDisplay();
 
-  writeDisplay();
-
-//  for(int i=0; i < 14; i++)
-//  {
-//    light(i);
-//    writeDisplay();
-//    delay(100);
-//    off(i);
-//    writeDisplay();
-//  }
+  for(int i=0; i < 14; i++)
+  {
+    light(i);
+    writeDisplay();
+    delay(100);
+    off(i);
+    writeDisplay();
+  }
 } // loop
 
 void light(byte ledIndex)

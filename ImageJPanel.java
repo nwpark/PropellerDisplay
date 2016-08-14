@@ -14,6 +14,7 @@ public class ImageJPanel extends JPanel
 
   public ImageJPanel()
   {
+    super();
     setBorder(BorderFactory.createTitledBorder("Output"));
   } // ImageJPanel
 
