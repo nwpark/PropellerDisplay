@@ -116,7 +116,9 @@ public class PropellerDisplay extends JFrame implements ActionListener
     optionsJPanel.add(pixelWidthJPanel);
     settingsJPanel.add(optionsJPanel);
 
-    progressBar = new ProgressBar(0, 100);
+    progressBar = new JProgressBar(0, 100);
+    progressBar.setValue(0);
+    progressBar.setStringPainted(true);
     settingsJPanel.add(progressBar);
 
     // Buttons at botton of UI
@@ -172,8 +174,7 @@ public class PropellerDisplay extends JFrame implements ActionListener
     {
       System.out.println(comPortJComboBox.getSelectedItem());
       if(imageUploader.upload(formattedImageArray,
-                              (String)comPortJComboBox.getSelectedItem(),
-                              progressBar))
+                              (String)comPortJComboBox.getSelectedItem()))
         System.out.println("Upload Success");
       else
         System.out.println("Upload Failed");

@@ -33,8 +33,7 @@ public class ImageUploader implements SerialPortEventListener
   } // ImageUploader
 
   public synchronized boolean upload(Color[][] formattedImageArray,
-                                     String comPortName,
-                                     JProgressBar progressBar)
+                                     String comPortName)
   {
     if(formattedImageArray == null || comPortName == null)
       return false;
@@ -61,6 +60,11 @@ public class ImageUploader implements SerialPortEventListener
       // give time for connection to establish
       Thread.sleep(2000);
 
+      int totalPixels = 0;
+      int pixelsUploaded = 0;
+      for(Color[] pixels : formattedImageArray)
+        totalPixels += pixels.length;
+
       // write the array items to serial port
       for(int i=1; i < formattedImageArray.length; i++)
       {
@@ -75,6 +79,8 @@ public class ImageUploader implements SerialPortEventListener
           out.write(formattedImageArray[i][j].getRed());
           if(!acknowledge())      // wait for acknowledgement
             return false;
+          //progressBar.setValue((pixelsUploaded / totalPixels) * 100);
+          //progressBar.setValue(50);
         }
       } // for
     } catch(PortInUseException e) {
