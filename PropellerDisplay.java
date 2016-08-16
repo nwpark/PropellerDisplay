@@ -125,6 +125,7 @@ public class PropellerDisplay extends JFrame implements ActionListener
     progressBar = new JProgressBar(0, 100);
     progressBar.setValue(0);
     progressBar.setStringPainted(true);
+    progressBar.setString("Select an image file, then format and upload");
     controlsJPanel.add(progressBar);
 
     // Buttons at botton of UI
