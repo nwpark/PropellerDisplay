@@ -169,14 +169,22 @@ public class ImageFormatter
     return pixelCount;
   } // pixelsPerSegment
 
-  private Color rollingAverage(Color average, Color newSample, int noOfSamples)
+  private Color rollingAverage(Color average, Color newSample, int noOfSample)
   {
-    int averageRed = average.getRed() - (average.getRed()/noOfSamples)
-                                      + (newSample.getRed()/noOfSamples);
-    int averageGreen = average.getGreen() - (average.getGreen()/noOfSamples)
-                                      + (newSample.getGreen()/noOfSamples);
-    int averageBlue = average.getBlue() - (average.getBlue()/noOfSamples)
-                                      + (newSample.getBlue()/noOfSamples);
+    double noOfSamples = (double)noOfSample;
+    int averageRed = (int)(average.getRed() - (average.getRed()/noOfSamples)
+                                      + (newSample.getRed()/noOfSamples));
+    int averageGreen = (int)(average.getGreen() - (average.getGreen()/noOfSamples)
+                                      + (newSample.getGreen()/noOfSamples));
+    int averageBlue = (int)(average.getBlue() - (average.getBlue()/noOfSamples)
+                                      + (newSample.getBlue()/noOfSamples));
+
+    // int averageRed = (int)(average.getRed() * ((noOfSamples-1)/noOfSamples)
+    //                                   + (newSample.getRed()/noOfSamples));
+    // int averageGreen = (int)(average.getGreen() * ((noOfSamples-1)/noOfSamples)
+    //                                       + (newSample.getGreen()/noOfSamples));
+    // int averageBlue = (int)(average.getBlue() * ((noOfSamples-1)/noOfSamples)
+    //                                     + (newSample.getBlue()/noOfSamples));
     return new Color(averageRed, averageGreen, averageBlue);
   } // rollingAverage
 

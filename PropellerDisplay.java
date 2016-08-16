@@ -45,8 +45,8 @@ public class PropellerDisplay extends JFrame implements ActionListener
   public PropellerDisplay() throws IOException
   {
     try {
-      //UIManager.setLookAndFeel("com.sun.java.swing.plaf.windows.WindowsLookAndFeel");
-      UIManager.setLookAndFeel("com.sun.java.swing.plaf.nimbus.NimbusLookAndFeel");
+      UIManager.setLookAndFeel("com.sun.java.swing.plaf.windows.WindowsLookAndFeel");
+      //UIManager.setLookAndFeel("com.sun.java.swing.plaf.nimbus.NimbusLookAndFeel");
     } catch(Exception e) { System.out.println(e); }
 
     setTitle("Propeller Display Uploader");
@@ -183,8 +183,7 @@ public class PropellerDisplay extends JFrame implements ActionListener
           System.out.println(comPortJComboBox.getSelectedItem());
           if(imageUploader.upload(formattedImageArray,
                                   (String)comPortJComboBox.getSelectedItem(),
-                                  progressBar))
-          {
+                                  progressBar)) {
             progressBar.setString("Upload Success");
             progressBar.setValue(0);
           } // if

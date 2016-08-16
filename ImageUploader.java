@@ -33,7 +33,8 @@ public class ImageUploader implements SerialPortEventListener
     refresh();
   } // ImageUploader
 
-  // upload the given image through the given serial port
+  // upload the given image through the given serial port, returns whether
+  // the upload was successful or not
   public synchronized boolean upload(Color[][] formattedImageArray,
                                      String comPortName,
                                      JProgressBar progressBar)
@@ -41,7 +42,7 @@ public class ImageUploader implements SerialPortEventListener
     if(formattedImageArray == null || comPortName == null)
       return false;
 
-    SerialPort serialPort;
+    SerialPort serialPort = null;
 
     try {
       // open(java.lang.String theOwner, int timeout), using 2 sec timeout
@@ -109,6 +110,12 @@ public class ImageUploader implements SerialPortEventListener
     } catch(Exception e) {
       System.out.println(e);
     } // catch
+
+    // close the serial port
+    if(serialPort != null) {
+      serialPort.removeEventListener();
+      serialPort.close();
+    } // if
 
     return true;
   } // upload
