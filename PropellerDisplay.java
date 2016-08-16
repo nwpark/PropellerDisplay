@@ -7,6 +7,7 @@ import javax.swing.BorderFactory;
 import javax.swing.JSeparator;
 import javax.swing.JFileChooser;
 import javax.swing.JComboBox;
+import javax.swing.JProgressBar;
 import javax.swing.UIManager;
 import javax.swing.border.EmptyBorder;
 import javax.imageio.ImageIO;
@@ -39,6 +40,7 @@ public class PropellerDisplay extends JFrame implements ActionListener
   private final JButton browseJButton;
   private final JTextField fileJTextField;
   private final JComboBox comPortJComboBox;
+  private final JProgressBar progressBar;
 
   public PropellerDisplay() throws IOException
   {
@@ -114,6 +116,9 @@ public class PropellerDisplay extends JFrame implements ActionListener
     optionsJPanel.add(pixelWidthJPanel);
     settingsJPanel.add(optionsJPanel);
 
+    progressBar = new ProgressBar(0, 100);
+    settingsJPanel.add(progressBar);
+
     // Buttons at botton of UI
     JPanel buttonsJPanel = new JPanel();
     buttonsJPanel.setLayout(new GridLayout(0, 2));
@@ -167,7 +172,8 @@ public class PropellerDisplay extends JFrame implements ActionListener
     {
       System.out.println(comPortJComboBox.getSelectedItem());
       if(imageUploader.upload(formattedImageArray,
-                              (String)comPortJComboBox.getSelectedItem()))
+                              (String)comPortJComboBox.getSelectedItem(),
+                              progressBar))
         System.out.println("Upload Success");
       else
         System.out.println("Upload Failed");

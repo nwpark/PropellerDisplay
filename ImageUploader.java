@@ -8,6 +8,7 @@ import java.io.IOException;
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
 
+import javax.swing.JProgressBar;
 import java.awt.Color;
 
 import gnu.io.CommPortIdentifier;
@@ -31,7 +32,9 @@ public class ImageUploader implements SerialPortEventListener
     refresh();
   } // ImageUploader
 
-  public synchronized boolean upload(Color[][] formattedImageArray, String comPortName)
+  public synchronized boolean upload(Color[][] formattedImageArray,
+                                     String comPortName,
+                                     JProgressBar progressBar)
   {
     if(formattedImageArray == null || comPortName == null)
       return false;
