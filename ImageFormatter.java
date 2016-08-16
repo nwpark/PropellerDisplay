@@ -99,6 +99,10 @@ public class ImageFormatter
         } // if
       } // for
 
+    pixelColor = new Color(pixelColor.getRed() < 128 ? 0 : 255,
+                           pixelColor.getGreen() < 128 ? 0 : 255,
+                           pixelColor.getBlue() < 128 ? 0 : 255);
+
     return pixelColor;
   } // getSectionColor
 
