@@ -146,17 +146,7 @@ public class PropellerDisplay extends JFrame implements ActionListener
   @Override
   public void actionPerformed(ActionEvent event)
   {
-    if(event.getSource() == formatJButton)
-    {
-      Thread formatImageThread = new Thread() {
-        public void run() {
-          formatImage();
-        } // run
-      }; // formatImageThread
-      formatImageThread.start();
-    } // if
-
-    else if(event.getSource() == browseJButton)
+    if(event.getSource() == browseJButton)
     {
       JFileChooser fileChooser = new JFileChooser(".");
       int returnValue = fileChooser.showOpenDialog(null);
@@ -176,11 +166,25 @@ public class PropellerDisplay extends JFrame implements ActionListener
         comPortJComboBox.addItem(comPortName);
     } // else if
 
+    else if(event.getSource() == formatJButton)
+    {
+      Thread formatImageThread = new Thread() {
+        public void run() {
+          formatJButton.setEnabled(false);
+          formatImage();
+          formatJButton.setEnabled(true);
+        } // run
+      }; // formatImageThread
+      formatImageThread.start();
+    } // if
+
     else if(event.getSource() == uploadJButton)
     {
       Thread uploadImageThread = new Thread() {
         public void run() {
           System.out.println(comPortJComboBox.getSelectedItem());
+          uploadJButton.setEnabled(false);
+
           if(imageUploader.upload(formattedImageArray,
                                   (String)comPortJComboBox.getSelectedItem(),
                                   progressBar)) {
@@ -189,6 +193,8 @@ public class PropellerDisplay extends JFrame implements ActionListener
           } // if
           else
             progressBar.setString("Upload Failed");
+
+          uploadJButton.setEnabled(true);
         } // run
       }; // uploadImageThread
       uploadImageThread.start();
