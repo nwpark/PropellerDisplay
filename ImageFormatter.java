@@ -15,7 +15,6 @@ public class ImageFormatter
   private int imageCenterY;
   private int pixelHeight;
   private int pixelWidth;
-  private int noOfPixels;
   private Color[][] formattedImageArray;
   private JPanel panel;
 
@@ -35,13 +34,18 @@ public class ImageFormatter
 
   public Color[][] formatImage() //throws IOException
   {
+    // format the central pixel
+    formattedImageArray[0] = new Color[1];
+    formattedImageArray[0][0] = getSectionColor(pixelHeight / 2, 0, 2*Math.PI);
+    setSectionColor(pixelHeight / 2, 0, 2*Math.PI, formattedImageArray[0][0]);
+
+    // format the rest of the pixels
     for(int radius = 1; radius < 14; radius++)
     {
       int noOfSections = (int)(2*Math.PI*radius*pixelHeight / (double)pixelWidth);
       formattedImageArray[radius] = new Color[noOfSections];
       double initAngle = 0;
       double endAngle = initAngle + 2*Math.PI / noOfSections;
-      noOfPixels = pixelsPerSegment(radius*pixelHeight, initAngle, endAngle);
       for(int i=0; i < noOfSections; i++)
       {
         endAngle = initAngle + 2*Math.PI / noOfSections;
@@ -53,8 +57,7 @@ public class ImageFormatter
       } // for
     } // for
 
-    try
-    {
+    try {
       File output = new File("test.jpg");
       ImageIO.write(outputImage, "jpg", output);
     } // try
@@ -69,7 +72,7 @@ public class ImageFormatter
     int outerRad = radius + pixelHeight / 2;
     int innerRad = radius - pixelHeight / 2;
 
-    Color pixelColor = null;
+    AverageColor pixelColor = null;
 
     for(int x=0; x < image.getWidth(); x++)
       for(int y=0; y < image.getHeight(); y++)
@@ -91,19 +94,13 @@ public class ImageFormatter
                 && currentAngle < endAngle)
         {
           if(pixelColor == null)
-            pixelColor = new Color(image.getRGB(x, y));
+            pixelColor = new AverageColor(image.getRGB(x, y));
           else
-            pixelColor = rollingAverage(pixelColor,
-                                        new Color(image.getRGB(x, y)),
-                                        noOfPixels);
+            pixelColor.rollingAverage(image.getRGB(x, y));
         } // if
       } // for
 
-    pixelColor = new Color(pixelColor.getRed() < 128 ? 0 : 255,
-                           pixelColor.getGreen() < 128 ? 0 : 255,
-                           pixelColor.getBlue() < 128 ? 0 : 255);
-
-    return pixelColor;
+    return pixelColor.getThreeBitAverage();
   } // getSectionColor
 
   private void setSectionColor(int radius, double initAngle,
@@ -137,55 +134,40 @@ public class ImageFormatter
       } // for
   } // setSectionColor
 
-  private int pixelsPerSegment(int radius, double initAngle,
-                               double endAngle)
+
+  public static class AverageColor extends Color
   {
-    int pixelCount = 0;
+    private int averageRed, averageGreen, averageBlue;
+    private int noOfPixels;
 
-    int outerRad = radius + pixelHeight / 2;
-    int innerRad = radius - pixelHeight / 2;
+    public AverageColor(int rgb)
+    {
+      super(rgb);
+      noOfPixels = 0;
+    } // AverageColor
 
-    for(int x=0; x < image.getWidth(); x++)
-      for(int y=0; y < image.getHeight(); y++)
-      {
-        double dx = x - imageCenterX;
-        double dy = y - imageCenterY;
-        double distanceSquared = dx*dx + dy*dy;
+    public void rollingAverage(int newRGB)
+    {
+      averageRed += (newRGB >> 16) & 0xFF;
+      averageGreen += (newRGB >> 8) & 0xFF;
+      averageBlue += newRGB & 0xFF;
+      noOfPixels++;
+    } // averageWith
 
-        //double currentAngle = Math.atan2(dx, dy);
-        double currentAngle = Math.atan(dx / dy);
-        // 1st and 4th quadrants
-        if(dy < 0) currentAngle += Math.PI;
-        // 3rd quadrant
-        else if(dy > 0 && dx < 0) currentAngle += 2*Math.PI;
+    public Color getAverage()
+    {
+      return new Color(averageRed / noOfPixels,
+                       averageGreen / noOfPixels,
+                       averageBlue / noOfPixels);
+    } // setAverage
 
-        if(distanceSquared < outerRad*outerRad
-                && distanceSquared > innerRad*innerRad
-                && currentAngle > initAngle
-                && currentAngle < endAngle)
-          pixelCount++;
-      } // for
-
-    return pixelCount;
-  } // pixelsPerSegment
-
-  private Color rollingAverage(Color average, Color newSample, int noOfSample)
-  {
-    double noOfSamples = (double)noOfSample;
-    int averageRed = (int)(average.getRed() - (average.getRed()/noOfSamples)
-                                      + (newSample.getRed()/noOfSamples));
-    int averageGreen = (int)(average.getGreen() - (average.getGreen()/noOfSamples)
-                                      + (newSample.getGreen()/noOfSamples));
-    int averageBlue = (int)(average.getBlue() - (average.getBlue()/noOfSamples)
-                                      + (newSample.getBlue()/noOfSamples));
-
-    // int averageRed = (int)(average.getRed() * ((noOfSamples-1)/noOfSamples)
-    //                                   + (newSample.getRed()/noOfSamples));
-    // int averageGreen = (int)(average.getGreen() * ((noOfSamples-1)/noOfSamples)
-    //                                       + (newSample.getGreen()/noOfSamples));
-    // int averageBlue = (int)(average.getBlue() * ((noOfSamples-1)/noOfSamples)
-    //                                     + (newSample.getBlue()/noOfSamples));
-    return new Color(averageRed, averageGreen, averageBlue);
-  } // rollingAverage
+    public Color getThreeBitAverage()
+    {
+      Color color = getAverage();
+      return new Color(color.getRed() < 128 ? 0 : 255,
+                       color.getGreen() < 128 ? 0 : 255,
+                       color.getBlue() < 128 ? 0 : 255);
+    } // getThreeBit
+  } // class AverageColor
 
 } // class ImageFormatter

@@ -71,8 +71,10 @@ public class ImageUploader implements SerialPortEventListener
       // calculate total pixels to upload for progress bar purposes
       int totalPixels = 0;
       int pixelsUploaded = 0;
-      for(int i=1; i < formattedImageArray.length; i++)
-        totalPixels += formattedImageArray[i].length;
+      for(Color[] pixelArray : formattedImageArray)
+        totalPixels += pixelArray.length;
+      // for(int i=0; i < formattedImageArray.length; i++)
+      //   totalPixels += formattedImageArray[i].length;
 
       // write the array items to serial port
       for(int i=1; i < formattedImageArray.length; i++)
@@ -88,7 +90,8 @@ public class ImageUploader implements SerialPortEventListener
         for(int j=0; j < formattedImageArray[i].length; j++)
         {
           // write the pixel value to serial port
-          out.write(formattedImageArray[i][j].getRed());
+          // out.write(formattedImageArray[i][j].getRed());
+          out.write(threeBitRGB(formattedImageArray[i][j]));
           if(!acknowledge())      // wait for acknowledgement
             return false;
 
@@ -146,6 +149,16 @@ public class ImageUploader implements SerialPortEventListener
     else
       return false;
   } // acknowledge
+
+  private byte threeBitRGB(Color pixel)
+  {
+    byte rgbValue = 0;
+    rgbValue |= (pixel.getRed() < 138 ? 0 : 1) << 2;
+    rgbValue |= (pixel.getGreen() < 138 ? 0 : 1) << 1;
+    rgbValue |= (pixel.getBlue() < 138 ? 0 : 1);
+    System.out.println(rgbValue);
+    return rgbValue;
+  } // threeBitRGB
 
   // returns the names of all the comm ports currently connected
   public String[] getPortNames()
