@@ -7,6 +7,7 @@ import javax.swing.BorderFactory;
 import javax.swing.JSeparator;
 import javax.swing.JFileChooser;
 import javax.swing.JComboBox;
+import javax.swing.JProgressBar;
 import javax.swing.UIManager;
 import javax.swing.border.EmptyBorder;
 import javax.imageio.ImageIO;
@@ -15,17 +16,20 @@ import java.awt.Container;
 import java.awt.BorderLayout;
 import java.awt.GridLayout;
 import java.awt.FlowLayout;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.awt.image.BufferedImage;
 import java.awt.Color;
 import java.awt.Graphics;
 import java.awt.Dimension;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
+import java.awt.image.BufferedImage;
 
 import java.io.File;
 import java.io.IOException;
 
-public class PropellerDisplay extends JFrame implements ActionListener
+public class PropellerDisplay extends JFrame implements ActionListener,
+                                                        PropertyChangeListener
 {
   private BufferedImage image = null;
   private Color[][] formattedImageArray = null;
@@ -39,6 +43,7 @@ public class PropellerDisplay extends JFrame implements ActionListener
   private final JButton browseJButton;
   private final JTextField fileJTextField;
   private final JComboBox comPortJComboBox;
+  private final JProgressBar progressBar;
 
   public PropellerDisplay() throws IOException
   {
@@ -114,6 +119,12 @@ public class PropellerDisplay extends JFrame implements ActionListener
     optionsJPanel.add(pixelWidthJPanel);
     settingsJPanel.add(optionsJPanel);
 
+    // Progress bar
+    progressBar = new JProgressBar(0, 100);
+    progressBar.setValue(0);
+    progressBar.setStringPainted(true);
+    settingsJPanel.add(progressBar);
+
     // Buttons at botton of UI
     JPanel buttonsJPanel = new JPanel();
     buttonsJPanel.setLayout(new GridLayout(0, 2));
@@ -166,13 +177,24 @@ public class PropellerDisplay extends JFrame implements ActionListener
     else if(event.getSource() == uploadJButton)
     {
       System.out.println(comPortJComboBox.getSelectedItem());
-      if(imageUploader.upload(formattedImageArray,
-                              (String)comPortJComboBox.getSelectedItem()))
-        System.out.println("Upload Success");
-      else
-        System.out.println("Upload Failed");
+      // if(imageUploader.upload(formattedImageArray,
+      //                         (String)comPortJComboBox.getSelectedItem()))
+      //   System.out.println("Upload Success");
+      // else
+      //   System.out.println("Upload Failed");
+      imageUploader.addPropertyChangeListener(this);
+      imageUploader.execute();
     } // else if
   } // actionPerformed
+
+  public void propertyChange(PropertyChangeEvent event)
+  {
+    if (event.getPropertyName() == "progress")
+    {
+      int progress = (Integer) event.getNewValue();
+      progressBar.setValue(progress);
+    } // if
+  } // propertyChange
 
   public void formatImage()
   {

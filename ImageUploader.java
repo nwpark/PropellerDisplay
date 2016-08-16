@@ -8,6 +8,7 @@ import java.io.IOException;
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
 
+import javax.swing.SwingWorker;
 import java.awt.Color;
 
 import gnu.io.CommPortIdentifier;
@@ -17,7 +18,8 @@ import gnu.io.PortInUseException;
 import gnu.io.SerialPortEvent;
 import gnu.io.SerialPortEventListener;
 
-public class ImageUploader implements SerialPortEventListener
+public class ImageUploader extends SwingWorker<Void, Void>
+                           implements SerialPortEventListener
 {
   private final HashMap<String, CommPortIdentifier>
     comPorts = new HashMap<String, CommPortIdentifier>();
@@ -25,13 +27,32 @@ public class ImageUploader implements SerialPortEventListener
   private InputStream in = null;
   private OutputStream out = null;
   private boolean ack = false;
+  private Color[][] formattedImageArray = null;
+  private String comPortName = null;
 
   public ImageUploader()
   {
     refresh();
   } // ImageUploader
 
-  public synchronized boolean upload(Color[][] formattedImageArray, String comPortName)
+  public ImageUploader(Color[][] requiredImageArray, String requiredPortName)
+  {
+    this();
+    formattedImageArray = requiredImageArray;
+    comPortName = requiredPortName;
+  } // ImageUploader
+
+  @Override
+  public void done() {}
+
+  @Override
+  public Void doInBackground()
+  {
+    upload();
+    return null;
+  }
+
+  public synchronized boolean upload()
   {
     if(formattedImageArray == null || comPortName == null)
       return false;
@@ -58,6 +79,11 @@ public class ImageUploader implements SerialPortEventListener
       // give time for connection to establish
       Thread.sleep(2000);
 
+      int totalPixels = 0;
+      int pixelsUploaded = 0;
+      for(Color[] pixels : formattedImageArray)
+        totalPixels += pixels.length;
+
       // write the array items to serial port
       for(int i=1; i < formattedImageArray.length; i++)
       {
@@ -72,6 +98,7 @@ public class ImageUploader implements SerialPortEventListener
           out.write(formattedImageArray[i][j].getRed());
           if(!acknowledge())      // wait for acknowledgement
             return false;
+          setProgress((pixelsUploaded / totalPixels) * 100);
         }
       } // for
     } catch(PortInUseException e) {
