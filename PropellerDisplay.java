@@ -45,8 +45,8 @@ public class PropellerDisplay extends JFrame implements ActionListener
   public PropellerDisplay() throws IOException
   {
     try {
-      UIManager.setLookAndFeel("com.sun.java.swing.plaf.windows.WindowsLookAndFeel");
-      //UIManager.setLookAndFeel("com.sun.java.swing.plaf.nimbus.NimbusLookAndFeel");
+      //UIManager.setLookAndFeel("com.sun.java.swing.plaf.windows.WindowsLookAndFeel");
+      UIManager.setLookAndFeel("com.sun.java.swing.plaf.nimbus.NimbusLookAndFeel");
     } catch(Exception e) { System.out.println(e); }
 
     setTitle("Propeller Display Uploader");
@@ -116,10 +116,16 @@ public class PropellerDisplay extends JFrame implements ActionListener
     optionsJPanel.add(pixelWidthJPanel);
     settingsJPanel.add(optionsJPanel);
 
+    // South side of UI area
+    JPanel controlsJPanel = new JPanel();
+    controlsJPanel.setLayout(new GridLayout(0, 1));
+    uiJPanel.add(controlsJPanel, BorderLayout.SOUTH);
+
+    // Progress bar
     progressBar = new JProgressBar(0, 100);
     progressBar.setValue(0);
     progressBar.setStringPainted(true);
-    settingsJPanel.add(progressBar);
+    controlsJPanel.add(progressBar);
 
     // Buttons at botton of UI
     JPanel buttonsJPanel = new JPanel();
@@ -130,9 +136,9 @@ public class PropellerDisplay extends JFrame implements ActionListener
     uploadJButton = new JButton("Upload");          // upload button
     buttonsJPanel.add(uploadJButton);
     uploadJButton.addActionListener(this);
-    uiJPanel.add(buttonsJPanel, BorderLayout.SOUTH);
+    controlsJPanel.add(buttonsJPanel);
 
-    //setDefaultLookAndFeelDecorated(true);
+
     setDefaultCloseOperation(EXIT_ON_CLOSE);
     pack();
   } // PropellerDisplay
@@ -145,8 +151,8 @@ public class PropellerDisplay extends JFrame implements ActionListener
       Thread formatImageThread = new Thread() {
         public void run() {
           formatImage();
-        }
-      };
+        } // run
+      }; // formatImageThread
       formatImageThread.start();
     } // if
 
@@ -172,12 +178,21 @@ public class PropellerDisplay extends JFrame implements ActionListener
 
     else if(event.getSource() == uploadJButton)
     {
-      System.out.println(comPortJComboBox.getSelectedItem());
-      if(imageUploader.upload(formattedImageArray,
-                              (String)comPortJComboBox.getSelectedItem()))
-        System.out.println("Upload Success");
-      else
-        System.out.println("Upload Failed");
+      Thread uploadImageThread = new Thread() {
+        public void run() {
+          System.out.println(comPortJComboBox.getSelectedItem());
+          if(imageUploader.upload(formattedImageArray,
+                                  (String)comPortJComboBox.getSelectedItem(),
+                                  progressBar))
+          {
+            progressBar.setString("Upload Success");
+            progressBar.setValue(0);
+          } // if
+          else
+            progressBar.setString("Upload Failed");
+        } // run
+      }; // uploadImageThread
+      uploadImageThread.start();
     } // else if
   } // actionPerformed
 

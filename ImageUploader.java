@@ -27,13 +27,16 @@ public class ImageUploader implements SerialPortEventListener
   private OutputStream out = null;
   private boolean ack = false;
 
+  // constructor
   public ImageUploader()
   {
     refresh();
   } // ImageUploader
 
+  // upload the given image through the given serial port
   public synchronized boolean upload(Color[][] formattedImageArray,
-                                     String comPortName)
+                                     String comPortName,
+                                     JProgressBar progressBar)
   {
     if(formattedImageArray == null || comPortName == null)
       return false;
@@ -58,29 +61,39 @@ public class ImageUploader implements SerialPortEventListener
       serialPort.notifyOnDataAvailable(true);
 
       // give time for connection to establish
+      progressBar.setIndeterminate(true);
+      progressBar.setString("Connecting...");
       Thread.sleep(2000);
+      progressBar.setIndeterminate(false);
+      progressBar.setString(null);
 
+      // calculate total pixels to upload for progress bar purposes
       int totalPixels = 0;
       int pixelsUploaded = 0;
-      for(Color[] pixels : formattedImageArray)
-        totalPixels += pixels.length;
+      for(int i=1; i < formattedImageArray.length; i++)
+        totalPixels += formattedImageArray[i].length;
 
       // write the array items to serial port
       for(int i=1; i < formattedImageArray.length; i++)
       {
+        // write the current pixel array index to serial port
         out.write(i);
         if(!acknowledge())      // wait for acknowledgement
           return false;
+        // write the length of the current pixel array to serial port
         out.write(formattedImageArray[i].length);
         if(!acknowledge())      // wait for acknowledgement
           return false;
         for(int j=0; j < formattedImageArray[i].length; j++)
         {
+          // write the pixel value to serial port
           out.write(formattedImageArray[i][j].getRed());
           if(!acknowledge())      // wait for acknowledgement
             return false;
-          //progressBar.setValue((pixelsUploaded / totalPixels) * 100);
-          //progressBar.setValue(50);
+
+          // update progress bar
+          pixelsUploaded++;
+          progressBar.setValue((pixelsUploaded*100 / totalPixels));
         }
       } // for
     } catch(PortInUseException e) {
@@ -100,15 +113,17 @@ public class ImageUploader implements SerialPortEventListener
     return true;
   } // upload
 
+  // this method is invoked upon recieving data through the serial port
   public synchronized void serialEvent(SerialPortEvent event)
   {
     if(event.getEventType() == SerialPortEvent.DATA_AVAILABLE)
       try {
+        // check if revieved byte was 1 to indicate ack
         ack = (in.read() == 1);
-
         // clear serial buffer
         while(in.read() != -1) {}
 
+        // notify the thread to stop waiting for ack
         this.notify();
       } catch(IOException e) {}
   } // serialEvent
@@ -125,12 +140,14 @@ public class ImageUploader implements SerialPortEventListener
       return false;
   } // acknowledge
 
+  // returns the names of all the comm ports currently connected
   public String[] getPortNames()
   {
     Set<String> portNames = comPorts.keySet();
     return portNames.toArray(new String[portNames.size()]);
   } // getPortNames
 
+  // refresh to check for new comm ports
   public void refresh()
   {
     comPorts.clear();
