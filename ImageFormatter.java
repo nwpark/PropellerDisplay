@@ -16,7 +16,7 @@ public class ImageFormatter
   private int pixelHeight;
   private int pixelWidth;
   private int noOfPixels;
-  private Color[][] formattedArray;
+  private Color[][] formattedImageArray;
   private JPanel panel;
 
   public ImageFormatter(ImageJPanel givenPanel) throws IOException
@@ -30,23 +30,25 @@ public class ImageFormatter
     // 14 pixels on the display
     pixelHeight = pixelWidth = imageRadius / 14;
 
-    formattedArray = new Color[14][];
+    formattedImageArray = new Color[14][];
   } // ImageFormatter
 
-  public void formatImage() //throws IOException
+  public Color[][] formatImage() //throws IOException
   {
     for(int radius = 1; radius < 14; radius++)
     {
       int noOfSections = (int)(2*Math.PI*radius*pixelHeight / (double)pixelWidth);
-      formattedArray[radius] = new Color[noOfSections];
+      formattedImageArray[radius] = new Color[noOfSections];
       double initAngle = 0;
+      double endAngle = initAngle + 2*Math.PI / noOfSections;
+      noOfPixels = pixelsPerSegment(radius*pixelHeight, initAngle, endAngle);
       for(int i=0; i < noOfSections; i++)
       {
-        double endAngle = initAngle + 2*Math.PI / noOfSections;
-        formattedArray[radius][i]
-          = averageSectionColor(radius*pixelHeight, initAngle, endAngle);
+        endAngle = initAngle + 2*Math.PI / noOfSections;
+        formattedImageArray[radius][i]
+          = getSectionColor(radius*pixelHeight, initAngle, endAngle);
         setSectionColor(radius*pixelHeight, initAngle, endAngle,
-                        formattedArray[radius][i]);
+                        formattedImageArray[radius][i]);
         initAngle = endAngle;
       } // for
     } // for
@@ -57,16 +59,17 @@ public class ImageFormatter
       ImageIO.write(outputImage, "jpg", output);
     } // try
     catch(IOException e) { System.out.println(e); }
+
+    return formattedImageArray;
   } // formatImage
 
-  private Color averageSectionColor(int radius, double initAngle,
-                                    double endAngle)
+  private Color getSectionColor(int radius, double initAngle,
+                                double endAngle)
   {
-    int redAverage, greenAverage, blueAverage, pixelCount;
-    redAverage = greenAverage = blueAverage = pixelCount = 0;
-
     int outerRad = radius + pixelHeight / 2;
     int innerRad = radius - pixelHeight / 2;
+
+    Color pixelColor = null;
 
     for(int x=0; x < image.getWidth(); x++)
       for(int y=0; y < image.getHeight(); y++)
@@ -87,19 +90,17 @@ public class ImageFormatter
                 && currentAngle > initAngle
                 && currentAngle < endAngle)
         {
-          Color pixelColor = new Color(image.getRGB(x, y));
-          redAverage += pixelColor.getRed();
-          greenAverage += pixelColor.getGreen();
-          blueAverage += pixelColor.getBlue();
-          pixelCount++;
+          if(pixelColor == null)
+            pixelColor = new Color(image.getRGB(x, y));
+          else
+            pixelColor = rollingAverage(pixelColor,
+                                        new Color(image.getRGB(x, y)),
+                                        noOfPixels);
         } // if
       } // for
 
-    redAverage /= pixelCount;
-    greenAverage /= pixelCount;
-    blueAverage /= pixelCount;
-    return new Color(redAverage, greenAverage, blueAverage);
-  } // averageSectionColor
+    return pixelColor;
+  } // getSectionColor
 
   private void setSectionColor(int radius, double initAngle,
                                double endAngle, Color color)
@@ -132,9 +133,13 @@ public class ImageFormatter
       } // for
   } // setSectionColor
 
-  private int pixelsPerSegment()
+  private int pixelsPerSegment(int radius, double initAngle,
+                               double endAngle)
   {
     int pixelCount = 0;
+
+    int outerRad = radius + pixelHeight / 2;
+    int innerRad = radius - pixelHeight / 2;
 
     for(int x=0; x < image.getWidth(); x++)
       for(int y=0; y < image.getHeight(); y++)
@@ -154,12 +159,21 @@ public class ImageFormatter
                 && distanceSquared > innerRad*innerRad
                 && currentAngle > initAngle
                 && currentAngle < endAngle)
-        {
           pixelCount++;
-        } // if
       } // for
 
-      return pixelCount;
+    return pixelCount;
   } // pixelsPerSegment
+
+  private Color rollingAverage(Color average, Color newSample, int noOfSamples)
+  {
+    int averageRed = average.getRed() - (average.getRed()/noOfSamples)
+                                      + (newSample.getRed()/noOfSamples);
+    int averageGreen = average.getGreen() - (average.getGreen()/noOfSamples)
+                                      + (newSample.getGreen()/noOfSamples);
+    int averageBlue = average.getBlue() - (average.getBlue()/noOfSamples)
+                                      + (newSample.getBlue()/noOfSamples);
+    return new Color(averageRed, averageGreen, averageBlue);
+  } // rollingAverage
 
 } // class ImageFormatter

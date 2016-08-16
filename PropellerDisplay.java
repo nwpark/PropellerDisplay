@@ -27,12 +27,14 @@ import java.io.IOException;
 
 public class PropellerDisplay extends JFrame implements ActionListener
 {
-  private BufferedImage image;
-  private ImageJPanel imageJPanel;
+  private BufferedImage image = null;
+  private Color[][] formattedImageArray = null;
+  private ImageJPanel imageJPanel = null;
 
   private final ImageUploader imageUploader = new ImageUploader();
 
   private final JButton formatJButton;
+  private final JButton refreshJButton;
   private final JButton uploadJButton;
   private final JButton browseJButton;
   private final JTextField fileJTextField;
@@ -40,7 +42,7 @@ public class PropellerDisplay extends JFrame implements ActionListener
 
   public PropellerDisplay() throws IOException
   {
-    try{
+    try {
       UIManager.setLookAndFeel("com.sun.java.swing.plaf.windows.WindowsLookAndFeel");
       //UIManager.setLookAndFeel("com.sun.java.swing.plaf.nimbus.NimbusLookAndFeel");
     } catch(Exception e) { System.out.println(e); }
@@ -81,7 +83,15 @@ public class PropellerDisplay extends JFrame implements ActionListener
     settingsJPanel.add(new JSeparator());
 
     // COM Port selector
-    settingsJPanel.add(new JLabel("COM Port:"));
+    JPanel comPortJPanel = new JPanel();
+    comPortJPanel.setLayout(new GridLayout(0, 2));
+    comPortJPanel.setBorder(new EmptyBorder(3, 0, 3, 0));
+    comPortJPanel.add(new JLabel("COM Port:"));
+    refreshJButton = new JButton("Refresh");
+    comPortJPanel.add(refreshJButton);
+    refreshJButton.addActionListener(this);
+    settingsJPanel.add(comPortJPanel);
+    // Combo box
     comPortJComboBox = new JComboBox(imageUploader.getPortNames());
     settingsJPanel.add(comPortJComboBox);
     comPortJComboBox.addActionListener(this);
@@ -125,14 +135,14 @@ public class PropellerDisplay extends JFrame implements ActionListener
   {
     if(event.getSource() == formatJButton)
     {
-      Thread formatImageThread = new Thread(new Runnable(){
-        public void run(){
+      Thread formatImageThread = new Thread() {
+        public void run() {
           formatImage();
         }
-      });
-
+      };
       formatImageThread.start();
     } // if
+
     else if(event.getSource() == browseJButton)
     {
       JFileChooser fileChooser = new JFileChooser(".");
@@ -141,11 +151,26 @@ public class PropellerDisplay extends JFrame implements ActionListener
       {
         File selectedFile = fileChooser.getSelectedFile();
         fileJTextField.setText(selectedFile.getPath());
-
         imageJPanel.setImage(selectedFile.getName());
-        // File input = new File(selectedFile.getName());
-        // image = ImageIO.read(input);
       } // if
+    } // else if
+
+    else if(event.getSource() == refreshJButton)
+    {
+      imageUploader.refresh();
+      comPortJComboBox.removeAllItems();
+      for(String comPortName : imageUploader.getPortNames())
+        comPortJComboBox.addItem(comPortName);
+    } // else if
+
+    else if(event.getSource() == uploadJButton)
+    {
+      System.out.println(comPortJComboBox.getSelectedItem());
+      if(imageUploader.upload(formattedImageArray,
+                              (String)comPortJComboBox.getSelectedItem()))
+        System.out.println("Upload Success");
+      else
+        System.out.println("Upload Failed");
     } // else if
   } // actionPerformed
 
@@ -154,7 +179,7 @@ public class PropellerDisplay extends JFrame implements ActionListener
     try
     {
       ImageFormatter imageFormatter = new ImageFormatter(imageJPanel);
-      imageFormatter.formatImage();
+      formattedImageArray = imageFormatter.formatImage();
     } // try
     catch(IOException e) {}
   } // formatImage
