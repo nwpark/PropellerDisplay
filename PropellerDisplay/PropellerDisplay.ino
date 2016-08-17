@@ -36,10 +36,19 @@ void loop()
 
 void loadImage()
 {
-  for(int layer=0; layer < 14; layer++)
+  for(byte layer=0; layer < 14; layer++)
   {
-    image[layer] = new byte[readAddress(layer)];
-    
+    // noOfPixels in each layer is stored in first 14 bytes in EEPROM
+    byte noOfPixels = readAddress(layer);
+
+    // initialize array of pixels for this layer
+    delete[] image[layer];
+    image[layer] = new byte[noOfPixels];
+
+    // address of each later is stored in second 14 bytes in EEPROM
+    byte layerAddress = readAddress(layer + 14);
+    for(byte pixelNo = 0; pixelNo < noOfPixels; pixelNo++)
+      image[layer][pixelNo] = readAddress(layerAddress + pixelNo);
   } // for
 } // loadImage
 
