@@ -75,35 +75,35 @@ void DisplayInterface::latch()
 
 void DisplayInterface::writeDisplay()
 {
-  digitalWrite(RED_PIN, HIGH);
   for(byte i=0; i < 16; i++)
-    if(CATHODE_PINS[i] < 14 && (ledStatus[CATHODE_PINS[i]] & 1) == 1)
+    if(CATHODE_PINS[i] < 14 && (ledStatus[CATHODE_PINS[i]] & B100) > 0)
       highBit();
     else
       lowBit();
-  latch();
-  delayMicroseconds(10);
-  digitalWrite(RED_PIN, LOW);
-
-  digitalWrite(GREEN_PIN, HIGH);
-  for(byte i=0; i < 16; i++)
-    if(CATHODE_PINS[i] < 14 && (ledStatus[CATHODE_PINS[i]] & 2) == 2)
-      highBit();
-    else
-      lowBit();
-  latch();
-  delayMicroseconds(10);
-  digitalWrite(GREEN_PIN, LOW);
-
-  digitalWrite(BLUE_PIN, HIGH);
-  for(byte i=0; i < 16; i++)
-    if(CATHODE_PINS[i] < 14 && (ledStatus[CATHODE_PINS[i]] & 4) == 4)
-      highBit();
-    else
-      lowBit();
-  latch();
-  delayMicroseconds(10);
   digitalWrite(BLUE_PIN, LOW);
+  latch();
+  digitalWrite(RED_PIN, HIGH);
+  delayMicroseconds(10);
+  
+  for(byte i=0; i < 16; i++)
+    if(CATHODE_PINS[i] < 14 && (ledStatus[CATHODE_PINS[i]] & B010) > 0)
+      highBit();
+    else
+      lowBit();
+  digitalWrite(RED_PIN, LOW);
+  latch();
+  digitalWrite(GREEN_PIN, HIGH);
+  delayMicroseconds(10);
+  
+  for(byte i=0; i < 16; i++)
+    if(CATHODE_PINS[i] < 14 && (ledStatus[CATHODE_PINS[i]] & B001) > 0)
+      highBit();
+    else
+      lowBit();
+  digitalWrite(GREEN_PIN, LOW);
+  latch();
+  digitalWrite(BLUE_PIN, HIGH);
+  delayMicroseconds(10);
 } // writeDisplay
 
 // allow for delays in the code by updating the display every 10

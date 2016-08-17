@@ -75,7 +75,7 @@ public class ImageUploader implements SerialPortEventListener
         totalPixels += pixelArray.length;
 
       // write the array items to serial port
-      for(int i=1; i < formattedImageArray.length; i++)
+      for(int i=0; i < formattedImageArray.length; i++)
       {
         // write the current pixel array index to serial port
         out.write(i);
@@ -137,7 +137,7 @@ public class ImageUploader implements SerialPortEventListener
 
   private boolean acknowledge() throws InterruptedException
   {
-    // wait for acknowledgement, with 1s timeout
+    // wait for acknowledgement, with 1s timeout, avoid race condition
     this.wait(1000);
     if(ack) {
       ack = false;
