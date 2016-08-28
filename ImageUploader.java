@@ -110,12 +110,13 @@ public class ImageUploader implements SerialPortEventListener
     } catch(Exception e) {
       System.out.println(e);
     } // catch
-
-    // close the serial port
-    if(serialPort != null) {
-      serialPort.removeEventListener();
-      serialPort.close();
-    } // if
+    finally {
+      // close the serial port
+      if(serialPort != null) {
+        serialPort.removeEventListener();
+        serialPort.close();
+      } // if
+    } // finally
 
     return true;
   } // upload
@@ -137,8 +138,8 @@ public class ImageUploader implements SerialPortEventListener
 
   private boolean acknowledge() throws InterruptedException
   {
-    // wait for acknowledgement, with 1s timeout, avoid race condition
-    this.wait(1000);
+    // wait for acknowledgement, with 2s timeout, avoid race condition
+    this.wait(2000);
     if(ack) {
       ack = false;
       return true;

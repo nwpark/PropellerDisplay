@@ -14,9 +14,9 @@ void setup()
   Wire.begin();
   //Wire.setClock(400000L);
   Serial.begin(9600);
-  disp = new DisplayInterface();
+  //disp = new DisplayInterface();
 
-  loadImage();
+  //loadImage();
 } // setup
 
 void loop()
@@ -39,16 +39,16 @@ void loadImage()
   for(byte layer=0; layer < 14; layer++)
   {
     // noOfPixels in each layer is stored in first 14 bytes in EEPROM
-    byte noOfPixels = readAddress(layer);
+    byte noOfPixels = readEEPROM(layer);
 
     // initialize array of pixels for this layer
     delete[] image[layer];
     image[layer] = new byte[noOfPixels];
 
     // address of each later is stored in second 14 bytes in EEPROM
-    byte layerAddress = readAddress(layer + 14);
+    byte layerAddress = readEEPROM(layer + 14);
     for(byte pixelNo = 0; pixelNo < noOfPixels; pixelNo++)
-      image[layer][pixelNo] = readAddress(layerAddress + pixelNo);
+      image[layer][pixelNo] = readEEPROM(layerAddress + pixelNo);
   } // for
 } // loadImage
 
@@ -67,28 +67,27 @@ void serialEvent()
   else if(image[layerTransmitting] == NULL)
   {
     // first byte recieved indicates number of pixels in this layer
-    byte pixelsInLayer = Serial.read();
+    int pixelsInLayer = Serial.read();
 
     // initialize array for this layer
     image[layerTransmitting] = new byte[pixelsInLayer];
 
-    // first 14 memory addresses store number of pixels in each layer
-    writeAddress(layerTransmitting, pixelsInLayer);
+    setLayerLength(layerTransmitting, pixelsInLayer);
 
-    // second 14 memory addresses store the starting address for
+    // next 28 memory addresses store the starting address for
     // the pixels in each layer
     if(layerTransmitting > 0)
     {
       byte previousLayer = layerTransmitting - 1;
       // set this layers address to be 1 greater than the last
       // address used for the previous layer
-      byte thisLayerAddress = 1 + readAddress(previousLayer)
-                              + readAddress(layerTransmitting + 14);
-      writeAddress(layerTransmitting + 14, thisLayerAddress);
+      int thisLayerAddress = layerLength(previousLayer)
+                             + readLayerAddress(previousLayer);
+      writeLayerAddress(layerTransmitting, thisLayerAddress);
     } // if
     else
-      // start address for first pixel data is 28
-      writeAddress(14, 28);
+      // start address for first pixel layer data is 36
+      writeLayerAddress(0, 42);
   } // else if
   else
   {
@@ -99,13 +98,13 @@ void serialEvent()
 
     // address of this pixel = address of this layer + current
     // pixel index
-    byte pixelAddress = readAddress(layerTransmitting + 14)
-                        + currentPixel;
-    writeAddress(pixelAddress, pixelValue);
+    int pixelAddress = readLayerAddress(layerTransmitting)
+                       + currentPixel;
+    writeEEPROM(pixelAddress, pixelValue);
     currentPixel++;
 
     // if all pixels have been uploaded, then finish the transmission
-    if(currentPixel == sizeof(image[layerTransmitting])) {
+    if(currentPixel >= readEEPROM(layerTransmitting)) {
       currentPixel = 0;
       transmitting = false;
     } // if
@@ -113,6 +112,7 @@ void serialEvent()
 
   acknowledge();
 } // serialEvent
+
 
 void acknowledge() {
   // clear serial buffer
@@ -123,7 +123,35 @@ void acknowledge() {
   Serial.write(1);
 } // acknowledge
 
-void writeAddress(int address, byte val)
+void writeLayerAddress(byte layer, int layerAddress)
+{
+  // address is 16 bit so stored across 2 bytes
+  writeEEPROM(layer*2 + 14, layerAddress >> 8);
+  writeEEPROM(layer*2 + 15, layerAddress & 0xFF);
+} // writeLayerAddress
+
+int readLayerAddress(byte layer)
+{
+  // address is 16 bit so stored across 2 bytes
+  int layerAddress = readEEPROM(layer*2 + 14);
+  layerAddress = layerAddress << 8;
+  layerAddress |= readEEPROM(layer*2 + 15);
+  return layerAddress;
+} // readLayerAddress
+
+void setLayerLength(byte layerNo, byte noOfPixels)
+{
+  // first 14 memory addresses store number of pixels in each layer
+  writeEEPROM(layerNo, noOfPixels);
+} // setLayerLength
+
+byte layerLength(byte layerNo)
+{
+  // first 14 memory addresses store number of pixels in each layer
+  return readEEPROM(layerNo);
+} // layerLength
+
+void writeEEPROM(int address, byte val)
 {
   Wire.beginTransmission(EEPROM_I2C_ADDRESS);
   Wire.write((int)(address >> 8));   // MSB
@@ -134,9 +162,9 @@ void writeAddress(int address, byte val)
   Wire.endTransmission();
 
   delay(5);
-} // writeAddress
+} // writeEEPROM
 
-byte readAddress(int address)
+byte readEEPROM(int address)
 {
   byte rData = 0xFF;
   
@@ -152,4 +180,4 @@ byte readAddress(int address)
   rData =  Wire.read();
 
   return rData;
-} // readAddress
+} // readEEPROM
