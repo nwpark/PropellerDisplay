@@ -14,9 +14,9 @@ void setup()
   Wire.begin();
   //Wire.setClock(400000L);
   Serial.begin(9600);
-  //disp = new DisplayInterface();
+  disp = new DisplayInterface();
 
-  //loadImage();
+  loadImage();
 } // setup
 
 void loop()
@@ -32,6 +32,25 @@ void loop()
 //    
 //    disp->wait(100);
 //  }
+
+
+
+//  int angle = 0;
+//  while(!transmitting)
+//  {
+//    for(int layer=0; layer < 14; layer++)
+//    {
+//      byte pixelIndex = (byte)(layerLength(layer)
+//                        * (angle / layerLength(13)));
+//      Serial.println(pixelIndex);
+//      byte rgbValue = image[layer][pixelIndex];
+//      disp->light(layer, rgbValue);
+//    } // for
+//    
+//    angle++;
+//    disp->wait(10);
+//  } // while
+
 } // loop
 
 void loadImage()
@@ -39,14 +58,13 @@ void loadImage()
   for(byte layer=0; layer < 14; layer++)
   {
     // noOfPixels in each layer is stored in first 14 bytes in EEPROM
-    byte noOfPixels = readEEPROM(layer);
+    byte noOfPixels = layerLength(layer);
 
     // initialize array of pixels for this layer
     delete[] image[layer];
     image[layer] = new byte[noOfPixels];
 
-    // address of each later is stored in second 14 bytes in EEPROM
-    byte layerAddress = readEEPROM(layer + 14);
+    byte layerAddress = readLayerAddress(layer);
     for(byte pixelNo = 0; pixelNo < noOfPixels; pixelNo++)
       image[layer][pixelNo] = readEEPROM(layerAddress + pixelNo);
   } // for
