@@ -83,7 +83,7 @@ void DisplayInterface::writeDisplay()
   digitalWrite(BLUE_PIN, LOW);
   latch();
   digitalWrite(RED_PIN, HIGH);
-  delayMicroseconds(10);
+  delayMicroseconds(5);
   
   for(byte i=0; i < 16; i++)
     if(CATHODE_PINS[i] < 14 && (ledStatus[CATHODE_PINS[i]] & B010) > 0)
@@ -93,7 +93,7 @@ void DisplayInterface::writeDisplay()
   digitalWrite(RED_PIN, LOW);
   latch();
   digitalWrite(GREEN_PIN, HIGH);
-  delayMicroseconds(10);
+  delayMicroseconds(5);
   
   for(byte i=0; i < 16; i++)
     if(CATHODE_PINS[i] < 14 && (ledStatus[CATHODE_PINS[i]] & B001) > 0)
@@ -103,18 +103,16 @@ void DisplayInterface::writeDisplay()
   digitalWrite(GREEN_PIN, LOW);
   latch();
   digitalWrite(BLUE_PIN, HIGH);
-  delayMicroseconds(10);
+  delayMicroseconds(5);
 } // writeDisplay
 
 // allow for delays in the code by updating the display every 10
 // microseconds rather than completely pausing the program.
 void DisplayInterface::wait(int t)
 {
-  //t*=2;
-  while(t > 0)
+  unsigned long currentTime = micros();
+  while(micros() - currentTime < t)
   {
     writeDisplay();
-    // delayMicroseconds(10);
-    t--;
   } // while
 } // wait

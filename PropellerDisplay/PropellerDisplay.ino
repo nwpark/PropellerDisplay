@@ -5,9 +5,13 @@
 
 DisplayInterface *disp;
 byte *image[14];
+byte layerLengths[14];
 boolean transmitting = false;
 byte layerTransmitting;
 byte currentPixel = 0;
+
+int incrementDelay = 1000;
+unsigned long previousTime = 0;
 
 void setup()
 {
@@ -17,41 +21,50 @@ void setup()
   disp = new DisplayInterface();
 
   loadImage();
+  pinMode(8, INPUT);
+  //attachInterrupt(digitalPinToInterrupt(8), updateSpeed, RISING);
 } // setup
 
 void loop()
 {
-//  disp->clearAll();
-//  disp->light(5, 1);
-//  disp->wait(1000);
-
-//  for(byte j=0; j <= 7; j++)
+  int angle = 0;
+  while(!transmitting && angle < layerLengths[13])
+  {
+    if(digitalRead(8))
+      updateSpeed();
+    
+    for(int layer=0; layer < 14; layer++)
+    {
+      byte pixelIndex = (byte)((layerLengths[layer] * angle)
+                               / layerLengths[13]);
+      byte rgbValue = image[layer][pixelIndex];
+      disp->light(layer, rgbValue);
+    } // for
+    
+    angle++;
+    disp->wait(incrementDelay);
+  } // while
+  
+//  if(digitalRead(8))
 //  {
-//    for(byte i=0; i < 14; i++)
-//      disp->light(i, j);
-//    
-//    disp->wait(100);
+//    disp->light(3, 7);
+//    disp->wait(500);
 //  }
-
-
-
-//  int angle = 0;
-//  while(!transmitting)
-//  {
-//    for(int layer=0; layer < 14; layer++)
-//    {
-//      byte pixelIndex = (byte)(layerLength(layer)
-//                        * (angle / layerLength(13)));
-//      Serial.println(pixelIndex);
-//      byte rgbValue = image[layer][pixelIndex];
-//      disp->light(layer, rgbValue);
-//    } // for
-//    
-//    angle++;
-//    disp->wait(10);
-//  } // while
-
 } // loop
+
+void updateSpeed()
+{
+  unsigned long lastRotationTime = millis() - previousTime;
+  
+  // debouncing - definitely not going faster than 60 fps,
+  // 1000/60 = 17
+  if(lastRotationTime > 17)
+  {
+    incrementDelay = (lastRotationTime*1000) / layerLengths[13];
+    previousTime = millis();
+    //Serial.println(incrementDelay);
+  } // if
+} // updateSpeed
 
 void loadImage()
 {
@@ -59,6 +72,7 @@ void loadImage()
   {
     // noOfPixels in each layer is stored in first 14 bytes in EEPROM
     byte noOfPixels = layerLength(layer);
+    layerLengths[layer] = noOfPixels;
 
     // initialize array of pixels for this layer
     delete[] image[layer];
@@ -161,6 +175,7 @@ void setLayerLength(byte layerNo, byte noOfPixels)
 {
   // first 14 memory addresses store number of pixels in each layer
   writeEEPROM(layerNo, noOfPixels);
+  layerLengths[layerNo] = noOfPixels;
 } // setLayerLength
 
 byte layerLength(byte layerNo)
